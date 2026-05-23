@@ -1,8 +1,12 @@
+<<<<<<< HEAD
 import java.util.Scanner;
+=======
+>>>>>>> 4a8cfae41468c263580894222266b99ab0426728
 
 public class Main {
 
     public static void main(String[] args) {
+<<<<<<< HEAD
 
         Scanner scanner = new Scanner(System.in);
 
@@ -21,5 +25,10 @@ public class Main {
         new GameEngine(name).run();
 
         scanner.close();
+=======
+        GameEngine game = new GameEngine();
+        game.startGame();
+ 
+>>>>>>> 4a8cfae41468c263580894222266b99ab0426728
     }
 }
