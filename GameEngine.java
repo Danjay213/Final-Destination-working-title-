@@ -1,147 +1,193 @@
-
 import java.util.Scanner;
-
 
 public class GameEngine {
 
-        Scanner sc = new Scanner(System.in);
- 
-        GameObject currentScene;
- 
-        Scene scene1, scene2, scene3, scene4, scene5, scene6;
- 
+    private Scene[] scenes;
+    private Scanner scanner = new Scanner(System.in);
+    private String  playerName;   
+    private int     deathCount;
 
-    public void startGame() {
+    public GameEngine(String playerName) {
+        this.playerName = playerName;
+        this.scenes     = StoryBuilder.buildScenes(playerName);
+    }
 
-        createScenes();
- 
+    public void run() {
         while (true) {
- 
-            System.out.println("Welcome to Final Destination!! (Working title)");
-            System.out.println("Main Menu");
-            System.out.println("A. Start");
-            System.out.println("B. Quit");
-            System.out.print("Choice: ");
- 
-            String mainChoice = sc.nextLine().toUpperCase();
- 
-            if (mainChoice.equals("A")) {
- 
-                currentScene = scene1;
-                boolean gameActive = true;
- 
-                while (gameActive) {
- 
-                    currentScene.displayScene();
- 
-                    System.out.print("Choice: ");
- 
-                    String input = sc.nextLine().toUpperCase();
- 
-                    int index = input.charAt(0) - 'A';
- 
-                    Scene tempScene = (Scene) currentScene;
- 
-                    if (index >= 0 && index < tempScene.getChoices().size()) {
- 
-                        gameActive = processChoice(
-                                tempScene.getChoices().get(index)
-                        );
- 
-                    } else {
- 
-                        System.out.println("Invalid choice.");
- 
-                    }
-                }
- 
-            } else if (mainChoice.equals("B")) {
- 
-                System.out.println("Thanks for playing!");
-                System.exit(0);
- 
-            } else {
- 
-                System.out.println("Invalid choice.");
- 
-            }
-        }
-    }
- 
-    public boolean processChoice(Choice choice) {
- 
-        if (choice.isGameOver()) {
- 
-            System.out.println("\n" + choice.getDeathMessage());
-            System.out.println("\nGame Over!\n");
- 
-            return false;
- 
-        }
- 
-        if (((Scene) currentScene).getId() == 6) {
- 
-            if (choice.getDescription().equals("B")) {
- 
-                System.out.println("\nThe house explodes out of nowhere...");
- 
-            }
- 
-            System.out.println("Returning to main menu...");
- 
-            return false;
- 
-        }
- 
-        if (choice.getNextScene() == 1) currentScene = scene1;
-        else if (choice.getNextScene() == 2) currentScene = scene2;
-        else if (choice.getNextScene() == 3) currentScene = scene3;
-        else if (choice.getNextScene() == 4) currentScene = scene4;
-        else if (choice.getNextScene() == 5) currentScene = scene5;
-        else if (choice.getNextScene() == 6) currentScene = scene6;
- 
-        return true;
-    }
- 
-    public void createScenes() {
-        // Scene 1
-        scene1 = new Scene(1,"You feel your usual path will kill you...");
- 
-        scene1.addChoice(new Choice("Same Path",0,true,"Aircon falls on your head."));
-        scene1.addChoice(new Choice("Different Path",2,false,null));
-      
-        // Scene 2
-        scene2 = new Scene(2,"A dog blocks your way...");
- 
-        scene2.addChoice(new Choice("Feed Biscuit",0,true,"Dog got aggressive."));
-        scene2.addChoice(new Choice("Pick Object",3,false,null));
+            clearScreen();
+            showMenu();
 
-        // Scene 3
-        scene3 = new Scene(3,"You are lost, phone dying...");
- 
-        scene3.addChoice(new Choice("Talk to man",4,false,null));
-        scene3.addChoice(new Choice("Enter alley",0,true,"Robber kills you."));
-        scene3.addChoice(new Choice("Wait",0,true,"Dogs find you."));
-        scene3.addChoice(new Choice("Sing song",0,true,"Man stabs you."));
- 
-        // Scene 4
-        scene4 = new Scene(4,"The man misleads you...");
- 
-        scene4.addChoice(new Choice("Run",0,true,"You fall."));
-        scene4.addChoice(new Choice("Shout",0,true,"Dogs hear you."));
-        scene4.addChoice(new Choice("Climb gate",0,true,"You fall."));
-        scene4.addChoice(new Choice("Confront man",5,false,null));
- 
-        // Scene 5
-        scene5 = new Scene(5,"You are close to home...");
- 
-        scene5.addChoice(new Choice("Run home",0,true,"Hit by car."));
-        scene5.addChoice(new Choice("Walk safely",6,false,null));
- 
-        // Scene 6
-        scene6 = new Scene(6,"...\nEverything goes silent.\nThe world fades to black.");
- 
-        scene6.addChoice(new Choice("A",0,false,null));
-        scene6.addChoice(new Choice("B",0,false,"Explosion ending"));
+            String input = ask("Choice: ").toUpperCase();
+
+            if (input.equals("A")) {
+                startGame();
+            } else if (input.equals("B")) {
+                System.out.println("\nThanks for playing!");
+                break;
+            } else if (input.equals("C")) {
+                
+                GameLogger.displayLog();
+                ask("Press ENTER to go back...");
+            } else {
+                System.out.println("Invalid choice.");
+            }
+        }
+    }
+
+    private void startGame() {
+        String current = "PREAMBLE";
+        deathCount = 0;
+
+        while (true) {
+
+         
+            Scene scene;
+            try {
+                scene = getScene(current);
+            } catch (IllegalArgumentException e) {
+                System.out.println("Internal error: " + e.getMessage());
+                return;
+            }
+
+            if (scene == null) {
+                System.out.println("Scene not found: " + current);
+                return;
+            }
+
+            clearScreen();
+            System.out.println("────────────────────────────────────────");
+            
+            System.out.println("[" + scene.getSceneType() + "]");
+            printSlowly(scene.getNarrative());       
+            if (scene.isGameOver()) {
+                deathCount++;
+                gameOver();
+                return;
+            }
+
+            if (scene.isEnding()) {
+               
+                GameLogger.logSession(playerName, deathCount, "SURVIVED");
+                ending();
+                return;
+            }
+
+            System.out.println();
+            Choice[] choices = scene.getChoices().toArray(new Choice[0]);
+
+            for (Choice choice : choices) {
+                System.out.println(choice.getLabel() + ". " + choice.getText());
+            }
+
+            if (scene.getHint() != null) {
+                System.out.println("H. Hint");
+            }
+
+            String nextScene = null;
+            while (nextScene == null) {
+
+               
+                try {
+                    String input = ask("\nChoice: ").toUpperCase();
+
+                    if (input.equals("H") && scene.getHint() != null) {
+                        
+                        printSlowly("\nHint: " + scene.getHint(), 10);
+                        continue;
+                    }
+
+                    for (Choice choice : choices) {
+                        if (input.equals(choice.getLabel())) {
+                            nextScene = choice.getNextSceneId();
+                        }
+                    }
+
+                    if (nextScene == null) {
+                        System.out.println("Invalid choice. Try again.");
+                    }
+
+                } catch (Exception e) {
+                    System.out.println("Input error: " + e.getMessage());
+                }
+            }
+
+            if (nextScene.equals("MENU")) {
+                return;
+            }
+
+            current = nextScene;
+        }
+    }
+
+   
+    private Scene getScene(String id) {
+        if (id == null || id.isEmpty()) {
+            throw new IllegalArgumentException("Scene ID cannot be null or empty.");
+        }
+        for (Scene scene : scenes) {
+            if (scene.getId().equals(id)) {
+                return scene;
+            }
+        }
+        return null;
+    }
+
+    private void showMenu() {
+        System.out.println("════════════════════════════════════════");
+        System.out.println("           FINAL DESTINATION");
+        System.out.println("════════════════════════════════════════");
+        System.out.println();
+        System.out.println("A. Start");
+        System.out.println("B. Quit");
+        System.out.println("C. View Past Sessions");
+        System.out.println();
+    }
+
+    private void gameOver() {
+        System.out.println("\nGAME OVER");
+       
+        GameLogger.logSession(playerName, deathCount, "DIED");
+        ask("Press ENTER to continue...");
+    }
+
+    private void ending() {
+        ask("\nPress ENTER to continue...");
+    }
+
+    private String ask(String prompt) {
+      
+        try {
+            System.out.print(prompt);
+            return scanner.nextLine().trim();
+        } catch (Exception e) {
+            System.out.println("Input error: " + e.getMessage());
+            return "";
+        }
+    }
+
+    private void clearScreen() {
+        System.out.print("\033[H\033[2J");
+        System.out.flush();
+    }
+
+   
+
+   
+    private void printSlowly(String text) {
+        printSlowly(text, 2);
+    }
+
+    
+    private void printSlowly(String text, int delayMs) {
+        for (char c : text.toCharArray()) {
+            System.out.print(c);
+            try {
+                Thread.sleep(delayMs);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                break;
+            }
+        }
+        System.out.println();
     }
 }

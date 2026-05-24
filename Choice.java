@@ -1,28 +1,23 @@
-
 public class Choice {
-    private String description;
-    private int nextScene;
-    private boolean gameOver;
-    private String deathMessage;
+    private String label;
+    private String text;
+    private String nextSceneId;
     
-    public Choice(String description, int nextScene, boolean gameOver, String deathMessage) {
-        this.description = description;
-        this.nextScene = nextScene;
-        this.gameOver = gameOver;
-        this.deathMessage = deathMessage;
+    public Choice(String label, String text, String nextSceneId) {
+        this.label = label;
+        this.text = text;
+        this.nextSceneId = nextSceneId;
     }
- 
-    //Getters for Choice
-    public String getDescription(){
-        return description;
-     }
-    public int getNextScene() {
-        return nextScene;
+    
+    public String getLabel() {
+        return label;
     }
-    public boolean isGameOver() {
-        return gameOver;
+    
+    public String getText() {
+        return text;
     }
-    public String getDeathMessage() {
-        return deathMessage;
+    
+    public String getNextSceneId() {
+        return nextSceneId;
     }
 }
