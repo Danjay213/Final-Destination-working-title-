@@ -174,7 +174,7 @@ public class GameEngine {
 
    
     private void printSlowly(String text) {
-        printSlowly(text, 20);
+        printSlowly(text, 2);
     }
 
     
