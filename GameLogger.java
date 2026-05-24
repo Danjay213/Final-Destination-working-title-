@@ -1,24 +1,21 @@
+import java.io.PrintWriter;
+import java.io.FileWriter;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.List;
+
 public class GameLogger {
 
     private static final String LOG_FILE = "game_log.txt";
 
     public static void logSession(String playerName, int deathCount, String outcome) {
-
-        // No LocalDateTime / DateTimeFormatter needed
-        long now = System.currentTimeMillis();
-        String entry = "[" + now + "]"
+        String entry = "[" + System.currentTimeMillis() + "]"
                      + "  Player: " + playerName
                      + "  |  Deaths: " + deathCount
-                     + "  |  Outcome: " + outcome
-                     + System.lineSeparator();
+                     + "  |  Outcome: " + outcome;
 
-        try {
-            Files.write(
-                Paths.get(LOG_FILE),
-                entry.getBytes(),
-                StandardOpenOption.CREATE,
-                StandardOpenOption.APPEND
-            );
+        try (PrintWriter writer = new PrintWriter(new FileWriter(LOG_FILE, true))) {
+            writer.println(entry);
         } catch (Exception e) {
             System.out.println("Warning: could not save session — " + e.getMessage());
         }
