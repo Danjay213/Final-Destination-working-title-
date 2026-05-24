@@ -20,7 +20,7 @@ public class StoryBuilder {
                 StoryLines.SCENE_1(playerName)
         );
         s1.setHint("But the same path feels so eerie...");
-        s1.addChoice(new Choice("A", "Go straight", "DEATH_AC_FALL"));
+        s1.addChoice(new Choice("A", "Go st raight", "DEATH_AC_FALL"));
         s1.addChoice(new Choice("B", "Trust instinct", "SCENE_2"));
         scenes[i++] = s1;
  

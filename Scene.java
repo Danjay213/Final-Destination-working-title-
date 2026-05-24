@@ -1,4 +1,3 @@
-
 import java.util.ArrayList;
 
 public class Scene {
@@ -26,7 +25,6 @@ public class Scene {
     public void setHint(String hint) {
         this.hint = hint;
     }
-<<<<<<< HEAD
     
     public void setGameOver(boolean value) {
         this.gameOver = value;
@@ -35,7 +33,6 @@ public class Scene {
     public void setEnding(boolean value) {
         this.ending = value;
     }
-    
     
     public String getId() {
         return id;
@@ -60,6 +57,4 @@ public class Scene {
     public boolean isEnding() {
         return ending;
     }
-=======
->>>>>>> 4a8cfae41468c263580894222266b99ab0426728
 }
